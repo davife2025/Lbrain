@@ -1,0 +1,13 @@
+{
+  "name": "@lbrain/ai",
+  "version": "1.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@lbrain/lbank-skills": "*",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
