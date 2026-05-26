@@ -1,32 +1,37 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
-interface Alert {
-  id:        string
-  symbol:    string
-  condition: 'above' | 'below'
-  target:    number
-  note:      string
-  active:    boolean
-  createdAt: string
-}
+import { alertEngine, type Alert } from '@/lib/alertEngine'
 
 export default function AlertsTab() {
-  const [alerts,  setAlerts]  = useState<Alert[]>([])
-  const [symbol,  setSymbol]  = useState('')
-  const [cond,    setCond]    = useState<'above'|'below'>('above')
-  const [target,  setTarget]  = useState('')
-  const [note,    setNote]    = useState('')
-  const [adding,  setAdding]  = useState(false)
-  const [prices,  setPrices]  = useState<Record<string,number>>({})
+  const [alerts,     setAlerts]     = useState<Alert[]>([])
+  const [prices,     setPrices]     = useState<Record<string, number>>({})
+  const [adding,     setAdding]     = useState(false)
+  const [symbol,     setSymbol]     = useState('')
+  const [cond,       setCond]       = useState<'above'|'below'>('above')
+  const [target,     setTarget]     = useState('')
+  const [note,       setNote]       = useState('')
+  const [permission, setPermission] = useState<NotificationPermission>('default')
 
-  // Load from localStorage
   useEffect(() => {
+    // Load saved alerts
     try {
       const saved = localStorage.getItem('lbrain-alerts')
       if (saved) setAlerts(JSON.parse(saved))
     } catch {}
+
+    // Check notification permission
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setPermission(Notification.permission)
+    }
+
+    // Subscribe to triggered alerts
+    const unsub = alertEngine.onTrigger((alert, price) => {
+      setAlerts(prev => prev.map(a => a.id === alert.id ? { ...a, triggered: true } : a))
+      setPrices(p => ({ ...p, [alert.symbol]: price }))
+    })
+
+    return unsub
   }, [])
 
   useEffect(() => {
@@ -41,6 +46,12 @@ export default function AlertsTab() {
       } catch {}
     })
   }, [alerts])
+
+  function requestPermission() {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      Notification.requestPermission().then(p => setPermission(p))
+    }
+  }
 
   function addAlert() {
     if (!symbol || !target) return
@@ -58,7 +69,7 @@ export default function AlertsTab() {
   }
 
   function toggleAlert(id: string) {
-    setAlerts(a => a.map(al => al.id===id ? { ...al, active: !al.active } : al))
+    setAlerts(a => a.map(al => al.id === id ? { ...al, active: !al.active } : al))
   }
 
   function deleteAlert(id: string) {
@@ -68,24 +79,43 @@ export default function AlertsTab() {
   function isTriggered(alert: Alert) {
     const price = prices[alert.symbol]
     if (!price) return false
-    return alert.condition==='above' ? price >= alert.target : price <= alert.target
+    return alert.condition === 'above' ? price >= alert.target : price <= alert.target
   }
 
-  const inp: React.CSSProperties = { background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--text)', borderRadius:8, padding:'8px 12px', fontSize:12, outline:'none', width:'100%', fontFamily:'inherit' }
+  const inp: React.CSSProperties = {
+    background:'var(--bg3)', border:'1px solid var(--border)', color:'var(--text)',
+    borderRadius:8, padding:'8px 12px', fontSize:12, outline:'none', width:'100%', fontFamily:'inherit',
+  }
 
   return (
     <div style={{ padding:'20px 16px 40px', fontFamily:"'DM Mono','Space Mono',monospace", maxWidth:520, margin:'0 auto' }}>
 
-      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
         <div>
           <div style={{ fontSize:16, fontWeight:800, color:'var(--text)' }}>Price Alerts</div>
-          <div style={{ fontSize:10, color:'var(--text3)', marginTop:1 }}>{alerts.filter(a=>a.active).length} active</div>
+          <div style={{ fontSize:10, color:'var(--text3)', marginTop:1 }}>
+            {alerts.filter(a=>a.active).length} active · checks every 30s
+          </div>
         </div>
         <button onClick={() => setAdding(v => !v)}
           style={{ padding:'6px 14px', borderRadius:8, background:'var(--blue)', border:'none', color:'#fff', fontSize:10, cursor:'pointer', fontWeight:600 }}>
           + New Alert
         </button>
       </div>
+
+      {/* Notification permission banner */}
+      {permission !== 'granted' && (
+        <div style={{ background:'rgba(26,111,255,0.06)', border:'1px solid rgba(26,111,255,0.2)', borderRadius:10, padding:'10px 14px', marginBottom:14, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ fontSize:10, color:'var(--blue)' }}>
+            🔔 Enable browser notifications to get alerted instantly
+          </div>
+          <button onClick={requestPermission}
+            style={{ padding:'4px 10px', borderRadius:6, background:'var(--blue)', border:'none', color:'#fff', fontSize:9, cursor:'pointer', flexShrink:0, marginLeft:8 }}>
+            Enable
+          </button>
+        </div>
+      )}
 
       {/* Add form */}
       {adding && (
@@ -94,16 +124,16 @@ export default function AlertsTab() {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8 }}>
             <div>
               <div style={{ fontSize:9, color:'var(--text3)', marginBottom:4 }}>COIN</div>
-              <input value={symbol} onChange={e => setSymbol(e.target.value)} placeholder="BTC" style={inp}
-                onFocus={e => (e.target as HTMLElement).style.borderColor='var(--blue)'}
-                onBlur={e  => (e.target as HTMLElement).style.borderColor='var(--border)'} />
+              <input value={symbol} onChange={e=>setSymbol(e.target.value)} placeholder="BTC" style={inp}
+                onFocus={e=>(e.target as HTMLElement).style.borderColor='var(--blue)'}
+                onBlur={e =>(e.target as HTMLElement).style.borderColor='var(--border)'} />
             </div>
             <div>
               <div style={{ fontSize:9, color:'var(--text3)', marginBottom:4 }}>CONDITION</div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:4 }}>
                 {(['above','below'] as const).map(c => (
                   <button key={c} onClick={() => setCond(c)}
-                    style={{ padding:'8px', borderRadius:6, fontSize:10, cursor:'pointer', background: cond===c ? 'var(--blue)' : 'var(--bg3)', color: cond===c ? '#fff' : 'var(--text2)', border: cond===c ? 'none' : '1px solid var(--border)' }}>
+                    style={{ padding:'8px', borderRadius:6, fontSize:10, cursor:'pointer', background: cond===c?'var(--blue)':'var(--bg3)', color: cond===c?'#fff':'var(--text2)', border: cond===c?'none':'1px solid var(--border)' }}>
                     {c}
                   </button>
                 ))}
@@ -112,15 +142,15 @@ export default function AlertsTab() {
           </div>
           <div style={{ marginBottom:8 }}>
             <div style={{ fontSize:9, color:'var(--text3)', marginBottom:4 }}>TARGET PRICE ($)</div>
-            <input value={target} onChange={e => setTarget(e.target.value)} placeholder="105000" type="number" style={inp}
-              onFocus={e => (e.target as HTMLElement).style.borderColor='var(--blue)'}
-              onBlur={e  => (e.target as HTMLElement).style.borderColor='var(--border)'} />
+            <input value={target} onChange={e=>setTarget(e.target.value)} placeholder="105000" type="number" style={inp}
+              onFocus={e=>(e.target as HTMLElement).style.borderColor='var(--blue)'}
+              onBlur={e =>(e.target as HTMLElement).style.borderColor='var(--border)'} />
           </div>
           <div style={{ marginBottom:12 }}>
             <div style={{ fontSize:9, color:'var(--text3)', marginBottom:4 }}>NOTE (optional)</div>
-            <input value={note} onChange={e => setNote(e.target.value)} placeholder="e.g. Take profit level" style={inp}
-              onFocus={e => (e.target as HTMLElement).style.borderColor='var(--blue)'}
-              onBlur={e  => (e.target as HTMLElement).style.borderColor='var(--border)'} />
+            <input value={note} onChange={e=>setNote(e.target.value)} placeholder="e.g. Take profit level" style={inp}
+              onFocus={e=>(e.target as HTMLElement).style.borderColor='var(--blue)'}
+              onBlur={e =>(e.target as HTMLElement).style.borderColor='var(--border)'} />
           </div>
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={addAlert} style={{ flex:1, padding:'8px', borderRadius:8, background:'var(--blue)', border:'none', color:'#fff', fontSize:11, cursor:'pointer', fontWeight:600 }}>Create Alert</button>
@@ -142,41 +172,52 @@ export default function AlertsTab() {
           {alerts.map(alert => {
             const triggered = isTriggered(alert)
             const price     = prices[alert.symbol]
+            const pct       = price && alert.target ? ((price - alert.target) / alert.target) * 100 : null
             return (
-              <div key={alert.id} style={{ background:'var(--bg2)', border:`1px solid ${triggered ? 'rgba(0,192,135,0.4)' : 'var(--border)'}`, borderRadius:12, padding:'14px 16px', opacity: alert.active ? 1 : 0.5 }}>
+              <div key={alert.id} style={{ background:'var(--bg2)', border:`1px solid ${triggered?'rgba(0,192,135,0.35)':'var(--border)'}`, borderRadius:12, padding:'14px 16px', opacity: alert.active?1:0.5, transition:'border-color 0.3s' }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     <div style={{ width:28, height:28, borderRadius:6, background:'rgba(26,111,255,0.1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, fontWeight:800, color:'var(--blue)' }}>
-                      {alert.symbol.slice(0,2)}
+                      {alert.symbol.slice(0,3)}
                     </div>
                     <div>
                       <span style={{ fontSize:12, fontWeight:700, color:'var(--text)' }}>{alert.symbol}</span>
-                      <span style={{ fontSize:10, color: alert.condition==='above' ? 'var(--blue)' : 'var(--red)', marginLeft:6 }}>
+                      <span style={{ fontSize:10, color: alert.condition==='above'?'var(--blue)':'var(--red)', marginLeft:6 }}>
                         {alert.condition} ${alert.target.toLocaleString()}
                       </span>
                     </div>
                   </div>
                   <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                     {triggered && (
-                      <span style={{ fontSize:8, padding:'2px 6px', borderRadius:4, background:'rgba(0,192,135,0.1)', color:'var(--green)', border:'1px solid rgba(0,192,135,0.2)' }}>TRIGGERED</span>
+                      <span style={{ fontSize:8, padding:'2px 6px', borderRadius:4, background:'rgba(0,192,135,0.1)', color:'var(--green)', border:'1px solid rgba(0,192,135,0.2)', animation:'lbPulse 2s infinite' }}>● HIT</span>
                     )}
                     <button onClick={() => toggleAlert(alert.id)}
-                      style={{ fontSize:8, padding:'2px 8px', borderRadius:4, cursor:'pointer', background: alert.active ? 'rgba(26,111,255,0.1)' : 'rgba(255,255,255,0.05)', color: alert.active ? 'var(--blue)' : 'var(--text3)', border: alert.active ? '1px solid rgba(26,111,255,0.2)' : '1px solid var(--border)' }}>
-                      {alert.active ? 'ON' : 'OFF'}
+                      style={{ fontSize:8, padding:'2px 8px', borderRadius:4, cursor:'pointer', background: alert.active?'rgba(26,111,255,0.1)':'rgba(255,255,255,0.05)', color: alert.active?'var(--blue)':'var(--text3)', border: alert.active?'1px solid rgba(26,111,255,0.2)':'1px solid var(--border)' }}>
+                      {alert.active?'ON':'OFF'}
                     </button>
-                    <button onClick={() => deleteAlert(alert.id)}
-                      style={{ fontSize:10, color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', padding:'2px 4px' }}>✕</button>
+                    <button onClick={() => deleteAlert(alert.id)} style={{ fontSize:10, color:'var(--text3)', background:'transparent', border:'none', cursor:'pointer', padding:'2px 4px' }}>✕</button>
                   </div>
                 </div>
-                <div style={{ display:'flex', justifyContent:'space-between' }}>
-                  {alert.note && <span style={{ fontSize:9, color:'var(--text3)' }}>{alert.note}</span>}
-                  {price && <span style={{ fontSize:9, color:'var(--text3)' }}>Current: ${price.toLocaleString()}</span>}
+
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div>
+                    {alert.note && <span style={{ fontSize:9, color:'var(--text3)' }}>{alert.note}</span>}
+                  </div>
+                  <div style={{ textAlign:'right' }}>
+                    {price && <div style={{ fontSize:9, color:'var(--text2)' }}>Now: ${price.toLocaleString()}</div>}
+                    {pct !== null && (
+                      <div style={{ fontSize:8, color: Math.abs(pct) < 5 ? 'var(--green)' : 'var(--text3)' }}>
+                        {pct >= 0 ? '+' : ''}{pct.toFixed(1)}% from target
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )
           })}
         </div>
       )}
+      <style>{`@keyframes lbPulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
     </div>
   )
 }

@@ -3,17 +3,20 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useStore } from '@/lib/store'
-import Sidebar      from '@/components/Sidebar'
-import BottomNav    from '@/components/BottomNav'
-import DashboardTab from '@/components/tabs/DashboardTab'
-import ChatTab      from '@/components/tabs/ChatTab'
-import MarketsTab   from '@/components/tabs/MarketsTab'
-import PortfolioTab from '@/components/tabs/PortfolioTab'
-import TradingTab   from '@/components/tabs/TradingTab'
-import AlertsTab    from '@/components/tabs/AlertsTab'
-import AgentTab     from '@/components/tabs/AgentTab'
-import LearnTab     from '@/components/tabs/LearnTab'
-import SettingsTab  from '@/components/tabs/SettingsTab'
+import { useEngines } from '@/hooks/useEngines'
+import Sidebar            from '@/components/Sidebar'
+import BottomNav          from '@/components/BottomNav'
+import NotificationBell   from '@/components/NotificationBell'
+import DashboardTab       from '@/components/tabs/DashboardTab'
+import ChatTab            from '@/components/tabs/ChatTab'
+import MarketsTab         from '@/components/tabs/MarketsTab'
+import PortfolioTab       from '@/components/tabs/PortfolioTab'
+import TradingTab         from '@/components/tabs/TradingTab'
+import AlertsTab          from '@/components/tabs/AlertsTab'
+import AgentTab           from '@/components/tabs/AgentTab'
+import LearnTab           from '@/components/tabs/LearnTab'
+import MessagingTab       from '@/components/tabs/MessagingTab'
+import SettingsTab        from '@/components/tabs/SettingsTab'
 
 const TABS: Record<string, React.ReactNode> = {
   home:      <DashboardTab />,
@@ -24,17 +27,20 @@ const TABS: Record<string, React.ReactNode> = {
   alerts:    <AlertsTab />,
   agent:     <AgentTab />,
   learn:     <LearnTab />,
+  messaging: <MessagingTab />,
   settings:  <SettingsTab />,
 }
 
 const TAB_LABELS: Record<string, string> = {
   chat:'AI Assistant', markets:'Markets', portfolio:'Portfolio',
-  trading:'Trade', alerts:'Alerts', agent:'Agent', learn:'Learn', settings:'Settings',
+  trading:'Trade', alerts:'Alerts', agent:'Agent', learn:'Learn',
+  messaging:'Messaging', settings:'Settings',
 }
 
 export default function App() {
-  const { data: session }           = useSession()
-  const { activeTab, setActiveTab } = useStore()
+  const { data: session }                               = useSession()
+  const { activeTab, setActiveTab }                     = useStore()
+  const { notifications, unreadCount, markAllRead, clearNotifications } = useEngines()
   const isHome = activeTab === 'home'
 
   // Always land on dashboard after login
@@ -49,11 +55,17 @@ export default function App() {
         <Sidebar />
         <div className="flex flex-col flex-1 min-w-0">
           {!isHome && (
-            <div className="flex items-center px-6 h-14 border-b shrink-0"
+            <div className="flex items-center justify-between px-6 h-14 border-b shrink-0"
               style={{ background:'var(--bg2)', borderColor:'var(--border)' }}>
               <span className="font-bold text-sm" style={{ color:'var(--text)' }}>
                 {TAB_LABELS[activeTab] ?? activeTab}
               </span>
+              <NotificationBell
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkRead={markAllRead}
+                onClear={clearNotifications}
+              />
             </div>
           )}
           <main className="flex-1 overflow-y-auto">{TABS[activeTab]}</main>
@@ -72,6 +84,12 @@ export default function App() {
                 {TAB_LABELS[activeTab] ?? 'LBrain'}
               </span>
             </div>
+            <NotificationBell
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkRead={markAllRead}
+              onClear={clearNotifications}
+            />
           </div>
         )}
         <main className="flex-1 overflow-y-auto" style={{ paddingBottom:68 }}>

@@ -2,11 +2,11 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 
 export interface ChatMessage {
-  id:        string
-  role:      'user' | 'assistant' | 'system'
-  content:   string
+  id:         string
+  role:       'user' | 'assistant' | 'system'
+  content:    string
   toolsUsed?: string[]
-  timestamp: number
+  timestamp:  number
 }
 
 export interface Holding {
@@ -18,7 +18,8 @@ export interface Holding {
 
 export type ActiveTab =
   | 'home' | 'chat' | 'markets' | 'portfolio'
-  | 'trading' | 'alerts' | 'agent' | 'learn' | 'settings'
+  | 'trading' | 'alerts' | 'agent' | 'learn'
+  | 'messaging' | 'settings'
 
 interface LBrainStore {
   // Credentials
@@ -58,9 +59,9 @@ export const useStore = create<LBrainStore>()(
       apiSecret:        '',
       isConnected:      false,
       autoTradeEnabled: false,
-      setCredentials: (key, secret) => set({ apiKey: key, apiSecret: secret, isConnected: !!(key && secret) }),
-      clearCredentials: () => set({ apiKey: '', apiSecret: '', isConnected: false, autoTradeEnabled: false }),
-      setAutoTrade: (enabled) => set({ autoTradeEnabled: enabled }),
+      setCredentials:   (key, secret) => set({ apiKey: key, apiSecret: secret, isConnected: !!(key && secret) }),
+      clearCredentials: ()            => set({ apiKey: '', apiSecret: '', isConnected: false, autoTradeEnabled: false }),
+      setAutoTrade:     (enabled)     => set({ autoTradeEnabled: enabled }),
 
       // Chat
       chatMessages: [],
@@ -68,18 +69,20 @@ export const useStore = create<LBrainStore>()(
       addChatMessage: (msg) => set(s => ({
         chatMessages: [...s.chatMessages, { ...msg, id: crypto.randomUUID(), timestamp: Date.now() }],
       })),
-      clearChat:    () => set({ chatMessages: [] }),
-      setChatMode:  (mode) => set({ chatMode: mode }),
+      clearChat:   () => set({ chatMessages: [] }),
+      setChatMode: (mode) => set({ chatMode: mode }),
 
       // Portfolio
-      holdings: [],
-      addHolding: (h) => {
-        const holdings = get().holdings
-        const color    = COLORS[holdings.length % COLORS.length]
+      holdings:      [],
+      addHolding:    (h) => {
+        const { holdings } = get()
+        const color = COLORS[holdings.length % COLORS.length]
         set(s => ({ holdings: [...s.holdings, { ...h, color }] }))
       },
       removeHolding: (coin) => set(s => ({
-        holdings: s.holdings.filter(h => h.coin !== coin).map((h, i) => ({ ...h, color: COLORS[i % COLORS.length] })),
+        holdings: s.holdings
+          .filter(h => h.coin !== coin)
+          .map((h, i) => ({ ...h, color: COLORS[i % COLORS.length] })),
       })),
       clearHoldings: () => set({ holdings: [] }),
 
