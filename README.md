@@ -1,12 +1,35 @@
 # LBrain
 
-**The AI brain for LBank** — live markets, AI-powered trading assistant, automated agent rules, and on-chain intelligence, all in one app.
+> **The AI brain for LBank** — live markets, AI trading assistant, automated agent rules, portfolio tracking, price alerts, and Telegram messaging.
 
 ---
 
-## What is LBrain?
+## Overview
 
-LBrain is a full-stack Next.js monorepo that gives LBank users an intelligent co-pilot. It's the first AI agent skills layer built specifically for LBank — combining live market data, conversational AI powered by Kimi K2, automated trading rules, price alerts, portfolio tracking, and Telegram messaging, all in a single clean interface.
+LBrain is the first AI agent skills layer built specifically for LBank exchange. It combines 15 custom LBank skills, a Kimi K2 AI agent, real-time WebSocket streaming, a 24/7 Render backend server, and a clean Next.js frontend — all in a Turborepo monorepo.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────┐        ┌──────────────────────┐
+│   Vercel (Web App)  │◀──────▶│   Render (Server)    │
+│                     │        │                      │
+│  Next.js 14         │        │  Express.js          │
+│  AI Chat API        │        │  Alert engine (30s)  │
+│  LBank market API   │        │  Agent engine (60s)  │
+│  Trading API        │        │  Price cache         │
+│  Auth (NextAuth)    │        │  Cron jobs           │
+│  WebSocket client   │        │  Notification push   │
+└─────────────────────┘        └──────────────────────┘
+          │                               │
+          ▼                               ▼
+┌─────────────────────┐        ┌──────────────────────┐
+│   Supabase          │        │   LBank API          │
+│   Auth + DB         │        │   REST + WebSocket   │
+└─────────────────────┘        └──────────────────────┘
+```
 
 ---
 
@@ -15,73 +38,89 @@ LBrain is a full-stack Next.js monorepo that gives LBank users an intelligent co
 ```
 lbrain/
 ├── apps/
-│   └── web/                          ← Next.js frontend + backend API
-│       ├── src/
-│       │   ├── app/
-│       │   │   ├── api/
-│       │   │   │   ├── ai/chat/      ← Streaming AI endpoint
-│       │   │   │   ├── lbank/
-│       │   │   │   │   ├── market/   ← Public market data
-│       │   │   │   │   ├── account/  ← Private account data
-│       │   │   │   │   └── trading/  ← Order management
-│       │   │   │   └── openclaw/     ← Telegram/messaging gateway
-│       │   │   ├── login/            ← Auth page
-│       │   │   └── page.tsx          ← Main app shell
-│       │   ├── components/
-│       │   │   ├── tabs/             ← All tab views
-│       │   │   ├── Sidebar.tsx       ← Slim icon sidebar
-│       │   │   └── BottomNav.tsx     ← Mobile bottom nav
-│       │   └── lib/
-│       │       ├── auth.ts           ← NextAuth config
-│       │       ├── store.ts          ← Zustand state
-│       │       └── supabase.ts       ← Supabase client
-├── packages/
-│   ├── lbank-skills/                 ← THE crown jewel
+│   ├── web/                          ← Next.js (Vercel)
 │   │   └── src/
-│   │       ├── client.ts             ← MD5/RSA signing + REST client
-│   │       ├── market.ts             ← 8 public market skills
-│   │       ├── account.ts            ← 3 private account skills
-│   │       ├── trading.ts            ← 6 private trading skills
-│   │       ├── websocket.ts          ← 3 real-time WebSocket streams
-│   │       └── index.ts              ← Exports + skill manifest
-│   └── ai/
+│   │       ├── app/
+│   │       │   ├── api/
+│   │       │   │   ├── ai/chat/      ← Streaming AI (Kimi K2)
+│   │       │   │   ├── lbank/
+│   │       │   │   │   ├── market/   ← Public market data
+│   │       │   │   │   ├── account/  ← Account balances
+│   │       │   │   │   └── trading/  ← Order management
+│   │       │   │   ├── openclaw/     ← Telegram gateway
+│   │       │   │   └── agent/
+│   │       │   │       ├── notify/   ← Receives from Render
+│   │       │   │       └── sync/     ← Syncs to Render
+│   │       │   ├── login/
+│   │       │   └── page.tsx
+│   │       ├── components/
+│   │       │   ├── tabs/             ← All 10 tabs
+│   │       │   ├── charts/           ← Candle, OrderBook, Ticker
+│   │       │   ├── Sidebar.tsx
+│   │       │   ├── BottomNav.tsx
+│   │       │   ├── NotificationBell.tsx
+│   │       │   ├── ErrorBoundary.tsx
+│   │       │   ├── Loading.tsx
+│   │       │   ├── EmptyState.tsx
+│   │       │   └── Toast.tsx
+│   │       ├── hooks/
+│   │       │   ├── useLBankTicker.ts    ← WebSocket live prices
+│   │       │   ├── useLBankOrderBook.ts ← WebSocket order book
+│   │       │   └── useEngines.ts        ← Alert + agent engines
+│   │       └── lib/
+│   │           ├── alertEngine.ts    ← Client-side alert polling
+│   │           ├── agentEngine.ts    ← Client-side rule executor
+│   │           ├── auth.ts
+│   │           ├── store.ts          ← Zustand state
+│   │           └── supabase.ts
+│   └── server/                       ← Express.js (Render)
 │       └── src/
-│           └── agent.ts              ← Kimi K2 agent wired to all 15 skills
-└── supabase/
-    └── schema.sql                    ← Database schema
+│           ├── index.ts              ← Entry point
+│           ├── cron.ts               ← Scheduled jobs
+│           ├── routes/index.ts       ← REST API
+│           └── services/
+│               ├── alertEngine.ts    ← 24/7 alert polling
+│               ├── agentEngine.ts    ← 24/7 rule executor
+│               ├── priceService.ts   ← Price cache
+│               └── notificationService.ts
+├── packages/
+│   ├── lbank-skills/                 ← 15 LBank skills (THE core)
+│   │   └── src/
+│   │       ├── client.ts             ← MD5/RSA signing
+│   │       ├── market.ts             ← 8 public skills
+│   │       ├── account.ts            ← 3 account skills
+│   │       ├── trading.ts            ← 6 trading skills
+│   │       ├── websocket.ts          ← 3 WS streams
+│   │       └── index.ts              ← Skill manifest
+│   └── ai/
+│       └── src/agent.ts             ← Kimi K2 + 15 tools
+├── supabase/schema.sql
+├── render.yaml
+├── vercel.json
+└── turbo.json
 ```
 
 ---
 
 ## LBank Skills (15 total)
 
-### Public Market Skills (no auth required)
-| Skill | Description |
-|---|---|
-| `get_ticker` | Live price and 24h stats for any pair |
-| `get_all_tickers` | Live prices for all LBank pairs |
-| `get_top_movers` | Top gaining and losing coins |
-| `get_order_book` | Current bids and asks |
-| `get_klines` | Candlestick/OHLCV chart data |
-| `get_recent_trades` | Latest executed trades |
-| `get_trading_pairs` | All available pairs |
-| `get_market_summary` | AI-friendly summary with sentiment |
-
-### Private Account Skills (API key required)
-| Skill | Description |
-|---|---|
-| `get_balances` | All wallet balances |
-| `get_portfolio_value` | Balances with USDT valuations |
-| `get_transaction_history` | Past transactions |
-
-### Private Trading Skills (API key required)
-| Skill | Description |
-|---|---|
-| `place_order` | Place market or limit orders |
-| `cancel_order` | Cancel a specific order |
-| `cancel_all_orders` | Cancel all open orders |
-| `get_open_orders` | Current open orders |
-| `get_order_history` | Historical orders |
+| Skill | Type | Description |
+|---|---|---|
+| `get_ticker` | Public | Live price + 24h stats |
+| `get_all_tickers` | Public | All LBank pairs |
+| `get_top_movers` | Public | Top gainers & losers |
+| `get_order_book` | Public | Bids and asks depth |
+| `get_klines` | Public | OHLCV candlestick data |
+| `get_recent_trades` | Public | Latest executed trades |
+| `get_trading_pairs` | Public | All available pairs |
+| `get_market_summary` | Public | AI-friendly summary + sentiment |
+| `get_balances` | Private | Wallet balances |
+| `get_portfolio_value` | Private | Portfolio with USDT values |
+| `get_transaction_history` | Private | Past transactions |
+| `place_order` | Private | Market or limit orders |
+| `cancel_order` | Private | Cancel by order ID |
+| `cancel_all_orders` | Private | Cancel all open orders |
+| `get_open_orders` | Private | Current open orders |
 
 ---
 
@@ -93,124 +132,130 @@ lbrain/
 | Monorepo | Turborepo |
 | Language | TypeScript |
 | Auth | NextAuth.js + Supabase Auth |
-| Database | Supabase (PostgreSQL) |
+| Database | Supabase (PostgreSQL + RLS) |
 | State | Zustand |
-| AI Model | Kimi K2 via Hugging Face |
-| Exchange | LBank REST + WebSocket API |
-| Messaging | OpenClaw (Telegram, WhatsApp, Discord) |
+| AI | Kimi K2 via Hugging Face |
+| Exchange | LBank REST + WebSocket |
+| Server | Express.js on Render |
+| Messaging | OpenClaw (Telegram) |
+| Fonts | Inter + DM Mono |
 | Styling | Tailwind CSS + CSS variables |
-| Deployment | Vercel |
+| Deploy | Vercel + Render |
 
 ---
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 - Node.js 22+
-- npm 10+
 - Supabase project
 - Hugging Face account (free)
-- Optionally: LBank API key, Google OAuth, OpenClaw account
 
-### Installation
+### Install
 
 ```bash
 git clone https://github.com/yourusername/lbrain.git
 cd lbrain
 npm install --ignore-scripts
 cp apps/web/.env.example apps/web/.env.local
+cp apps/server/.env.example apps/server/.env
 ```
 
-### Environment Variables
-
-Fill in `apps/web/.env.local`:
-
-```env
-NEXTAUTH_SECRET=your_secret
-NEXTAUTH_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_key
-HUGGINGFACE_API_KEY=hf_your_token
-OPENCLAW_SECRET=your_shared_secret
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
-### Run Locally
+### Run locally
 
 ```bash
-npm run dev
+# Web app
+cd apps/web && npm run dev
+
+# Server (separate terminal)
+cd apps/server && npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000)
-
----
-
-## Supabase Setup
-
-Run `supabase/schema.sql` in your Supabase SQL editor. It creates:
-- `user_settings` — API keys (encrypted), preferences
-- `alerts` — price alert rules
-- `agent_rules` — automation rules
-- `chat_history` — optional conversation history
-- Row Level Security policies for all tables
-
----
-
-## Connecting Telegram
-
-1. Install OpenClaw: `npm install -g openclaw --ignore-scripts`
-2. Use Node 22+: `nvm install 22 && nvm use 22`
-3. Run: `openclaw onboard --install-daemon`
-4. Set gateway URL in OpenClaw dashboard: `https://your-app.vercel.app/api/openclaw/message`
-5. Set shared secret to match `OPENCLAW_SECRET`
-6. Set Telegram webhook:
-
-```bash
-curl.exe -X POST "https://api.telegram.org/botYOUR_TOKEN/setWebhook" -H "Content-Type: application/json" -d "{\"url\": \"https://your-app.vercel.app/api/openclaw/message\"}"
-```
-
-**Available Telegram commands:**
-- `/price BTC` — live LBank price
-- `/movers` — top 24h gainers & losers
-- `/summary ETH` — full market summary
-- `/help` — all commands
-- Or ask anything in natural language
-
----
-
-## API Routes
-
-| Route | Method | Description | Auth |
-|---|---|---|---|
-| `/api/ai/chat` | POST | Streaming AI chat | None |
-| `/api/lbank/market` | GET | Public market data | None |
-| `/api/lbank/account` | GET | Account balances | LBank keys |
-| `/api/lbank/trading` | POST | Order management | LBank keys |
-| `/api/openclaw/message` | POST | Messaging gateway | OpenClaw secret |
-| `/api/openclaw/price` | GET | Quick price lookup | None |
-| `/api/auth/callback` | GET | Supabase OAuth callback | None |
 
 ---
 
 ## Deployment
 
-### Vercel (recommended)
+See **DEPLOY.md** for the full step-by-step guide covering:
+- Supabase schema setup
+- Render server deployment
+- Vercel web app deployment
+- Telegram webhook configuration
+- Environment variable reference
 
-1. Push to GitHub
-2. Import repo in Vercel
-3. Set environment variables in Vercel dashboard
-4. Deploy — `vercel.json` handles the rest
+---
 
-### Generate secrets
+## Environment Variables
 
-```bash
-# NEXTAUTH_SECRET
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+### Web App (`apps/web/.env.local`)
 
-# OPENCLAW_SECRET
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```env
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=https://your-app.vercel.app
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+HUGGINGFACE_API_KEY=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+OPENCLAW_SECRET=
+RENDER_SERVER_URL=https://lbrain-server.onrender.com
+SERVER_SECRET=
+NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 ```
+
+### Server (`apps/server/.env`)
+
+```env
+PORT=3001
+SERVER_SECRET=
+WEB_APP_URL=https://your-app.vercel.app
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+OPENCLAW_SECRET=
+HUGGINGFACE_API_KEY=
+```
+
+---
+
+## API Reference
+
+### Web App (Vercel)
+
+| Endpoint | Method | Auth | Description |
+|---|---|---|---|
+| `/api/ai/chat` | POST | — | Streaming AI chat |
+| `/api/lbank/market` | GET | — | Market data (ticker, klines, orderbook) |
+| `/api/lbank/account` | GET | LBank keys | Balances, portfolio |
+| `/api/lbank/trading` | POST | LBank keys | Place/cancel orders |
+| `/api/openclaw/message` | POST | OpenClaw secret | Telegram webhook |
+| `/api/openclaw/price` | GET | — | Quick price |
+| `/api/agent/notify` | POST | Server secret | Receive from Render |
+| `/api/agent/sync` | POST/GET | — | Sync to Render |
+
+### Render Server
+
+| Endpoint | Method | Auth | Description |
+|---|---|---|---|
+| `/api/health` | GET | — | Health check |
+| `/api/price/:symbol` | GET | — | Cached price |
+| `/api/movers` | GET | — | Top movers |
+| `/api/alerts` | GET/POST/DELETE | Server secret | Alert management |
+| `/api/rules` | GET/POST/DELETE | Server secret | Rule management |
+| `/api/status` | GET | Server secret | Engine status |
+
+---
+
+## Telegram Commands
+
+Once connected via OpenClaw:
+
+| Command | Description |
+|---|---|
+| `/price BTC` | Live LBank price |
+| `/movers` | Top 24h gainers & losers |
+| `/summary ETH` | Full market summary |
+| `/help` | All commands |
+| Natural language | Full AI responses |
 
 ---
 
@@ -223,12 +268,17 @@ Password: demo1234
 
 ---
 
-## Roadmap
+## Sessions Completed
 
-- [ ] Session 5 — WebSocket live price streaming in UI
-- [ ] Session 6 — LBank order book depth chart
-- [ ] Session 7 — Agent rule execution engine
-- [ ] Session 8 — Mobile app (React Native)
+| Session | Content |
+|---|---|
+| 1+2 | Monorepo scaffold, 15 LBank skills, AI agent, auth, API routes |
+| 3 | All 10 UI tabs (Dashboard, Chat, Markets, Portfolio, Trade, Alerts, Agent, Learn, Messaging, Settings) |
+| 4 | Telegram gateway, Supabase schema, Vercel config, README |
+| 5 | WebSocket streaming, CandleChart, OrderBookChart, LiveTickerStrip |
+| 6 | Alert engine, Agent engine, NotificationBell, MessagingTab |
+| 7 | Render server, 24/7 engines, DEPLOY.md, server sync routes |
+| 8 | Font polish, icons, full candlestick chart, error boundaries, skeletons, SEO |
 
 ---
 
@@ -238,11 +288,4 @@ MIT
 
 ---
 
-## Acknowledgements
-
-- [LBank API](https://github.com/LBank-exchange/lbank-official-api-docs) — exchange data and trading
-- [OpenClaw](https://openclaw.ai) — messaging gateway
-- [Kimi K2](https://huggingface.co/moonshotai/Kimi-K2-Instruct) — AI model
-- [Supabase](https://supabase.com) — auth and database
-- [Vercel](https://vercel.com) — deployment
-- [Turborepo](https://turbo.build) — monorepo tooling
+*Built with LBank Skills Hub · Kimi K2 · OpenClaw · Supabase · Vercel · Render*

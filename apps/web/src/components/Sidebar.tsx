@@ -4,15 +4,16 @@ import { useStore } from '@/lib/store'
 import type { ActiveTab } from '@/lib/store'
 
 const NAV_MAIN: { id: ActiveTab; label: string; icon: string; badge?: string }[] = [
-  { id: 'home',      label: 'Dashboard',    icon: '⊞'  },
-  { id: 'chat',      label: 'AI Assistant', icon: '◈'  },
-  { id: 'markets',   label: 'Markets',      icon: '◐'  },
-  { id: 'portfolio', label: 'Portfolio',    icon: '◑'  },
-  { id: 'trading',   label: 'Trade',        icon: '⚡'  },
-  { id: 'alerts',    label: 'Alerts',       icon: '🔔' },
-  { id: 'agent',     label: 'Agent',        icon: '🤖', badge: 'AUTO' },
-  { id: 'learn',     label: 'Learn',        icon: '◉'  },
-  { id: 'messaging', label: 'Messaging',    icon: '📱', badge: 'NEW' },
+  { id: 'home',      label: 'Dashboard',    icon: '▦'  },
+  { id: 'chat',      label: 'AI Assistant', icon: '⬡'  },
+  { id: 'markets',   label: 'Markets',      icon: '╱╲' },
+  { id: 'portfolio', label: 'Portfolio',    icon: '◍'  },
+  { id: 'trading',   label: 'Trade',        icon: '⇅'  },
+  { id: 'alerts',    label: 'Alerts',       icon: '⊙'  },
+  { id: 'agent',     label: 'Agent',        icon: '⟳', badge:'AUTO' },
+  { id: 'learn',     label: 'Learn',        icon: '⊕'  },
+  { id: 'messaging', label: 'Messaging',    icon: '⌘', badge:'NEW' },
+  { id: 'settings',  label: 'Settings',     icon: '⊘'  },
 ]
 
 export default function Sidebar() {
@@ -21,75 +22,76 @@ export default function Sidebar() {
   return (
     <>
       <style>{`
-        .lb-sidebar { width:52px; transition:width 0.22s cubic-bezier(0.4,0,0.2,1); overflow:hidden; white-space:nowrap; }
-        .lb-sidebar:hover { width:192px; }
-        .lb-label { opacity:0; transition:opacity 0.12s 0.06s; font-size:12px; font-weight:600; color:var(--text2); flex:1; }
-        .lb-sidebar:hover .lb-label { opacity:1; }
-        .lb-fade { opacity:0; transition:opacity 0.12s 0.08s; }
-        .lb-sidebar:hover .lb-fade { opacity:1; }
-        .lb-badge { opacity:0; transition:opacity 0.12s 0.06s; }
-        .lb-sidebar:hover .lb-badge { opacity:1; }
-        .lb-item { position:relative; display:flex; align-items:center; gap:10px; padding:9px 14px; cursor:pointer; width:100%; border:none; background:transparent; text-align:left; transition:background 0.12s; }
+        .lb-sb { width:50px; transition:width 0.2s cubic-bezier(0.4,0,0.2,1); overflow:hidden; white-space:nowrap; }
+        .lb-sb:hover { width:192px; }
+        .lb-lbl { opacity:0; transition:opacity 0.1s 0.05s; font-size:12px; font-weight:400; color:var(--text2); flex:1; font-family:var(--font-sans); letter-spacing:0.01em; }
+        .lb-sb:hover .lb-lbl { opacity:1; }
+        .lb-fade { opacity:0; transition:opacity 0.1s 0.06s; }
+        .lb-sb:hover .lb-fade { opacity:1; }
+        .lb-bdg { opacity:0; transition:opacity 0.1s; }
+        .lb-sb:hover .lb-bdg { opacity:1; }
+        .lb-item { position:relative; display:flex; align-items:center; gap:11px; padding:8px 13px; cursor:pointer; width:100%; border:none; background:transparent; text-align:left; transition:background 0.1s; }
         .lb-item:hover { background:var(--bg3); }
         .lb-item.active { background:var(--blue-subtle); }
-        .lb-item.active::before { content:''; position:absolute; left:0; top:5px; bottom:5px; width:2px; background:var(--blue); border-radius:0 2px 2px 0; }
-        .lb-item.active .lb-label { color:var(--blue); }
-        .lb-item .lb-icon { opacity:0.6; }
-        .lb-item.active .lb-icon { opacity:1; }
-        @keyframes lbBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .lb-item.active::before { content:''; position:absolute; left:0; top:6px; bottom:6px; width:2px; background:var(--blue); border-radius:0 2px 2px 0; }
+        .lb-item.active .lb-lbl { color:var(--blue); font-weight:500; }
+        .lb-item .lb-icn { opacity:0.45; transition:opacity 0.1s; }
+        .lb-item:hover .lb-icn { opacity:0.7; }
+        .lb-item.active .lb-icn { opacity:1; }
+        @keyframes lbBlink2 { 0%,100%{opacity:1} 50%{opacity:0.3} }
       `}</style>
 
-      <aside className="lb-sidebar flex flex-col shrink-0 border-r"
+      <aside className="lb-sb flex flex-col shrink-0 border-r"
         style={{ background:'var(--bg2)', borderColor:'var(--border)', height:'100vh' }}>
 
         {/* Logo */}
-        <div className="flex items-center gap-3 px-[13px] py-4 border-b shrink-0"
+        <div className="flex items-center gap-3 px-[12px] py-[14px] border-b shrink-0"
           style={{ borderColor:'var(--border)' }}>
-          <div className="w-[26px] h-[26px] rounded-md flex items-center justify-center font-black shrink-0"
-            style={{ background:'var(--blue)', color:'#fff', fontSize:10 }}>LB</div>
+          <div className="w-[26px] h-[26px] rounded-md flex items-center justify-center shrink-0"
+            style={{ background:'var(--blue)', color:'#fff', fontSize:11, fontWeight:600, fontFamily:'var(--font-sans)' }}>LB</div>
           <div className="lb-fade">
-            <div className="font-extrabold text-sm" style={{ color:'var(--text)' }}>LBrain</div>
-            <div className="mono text-[8px] tracking-widest uppercase" style={{ color:'var(--text3)' }}>AI Platform</div>
+            <div style={{ fontSize:13, fontWeight:600, color:'var(--text)', fontFamily:'var(--font-sans)', letterSpacing:'-0.01em' }}>LBrain</div>
+            <div style={{ fontSize:9, color:'var(--text3)', fontFamily:'var(--font-mono)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:1 }}>AI Platform</div>
           </div>
         </div>
 
-        {/* Nav */}
+        {/* Nav items */}
         <nav className="flex-1 py-2 flex flex-col overflow-y-auto" style={{ gap:1 }}>
           {NAV_MAIN.map(item => (
             <button key={item.id} onClick={() => setActiveTab(item.id)}
               className={`lb-item ${activeTab === item.id ? 'active' : ''}`}>
-              <span className="lb-icon text-center shrink-0" style={{ fontSize:15, width:24 }}>{item.icon}</span>
-              <span className="lb-label">{item.label}</span>
+              <span className="lb-icn text-center shrink-0"
+                style={{ fontSize:14, width:24, fontFamily:'var(--font-mono)', color:'var(--text)' }}>
+                {item.icon}
+              </span>
+              <span className="lb-lbl">{item.label}</span>
               {item.badge && (
-                <span className="lb-badge mono text-[7px] font-bold px-1 py-0.5 rounded shrink-0"
-                  style={{ background:'var(--blue)', color:'#fff' }}>{item.badge}</span>
+                <span className="lb-bdg"
+                  style={{ fontSize:7, padding:'1px 5px', borderRadius:3, background:'var(--blue)', color:'#fff', fontFamily:'var(--font-mono)', letterSpacing:'0.05em', flexShrink:0 }}>
+                  {item.badge}
+                </span>
               )}
             </button>
           ))}
         </nav>
 
-        {/* Bottom */}
-        <div className="border-t shrink-0" style={{ borderColor:'var(--border)', padding:'8px 0' }}>
+        {/* Bottom status */}
+        <div className="border-t shrink-0 py-2" style={{ borderColor:'var(--border)' }}>
           {autoTradeEnabled && (
             <div className="flex items-center gap-2 mx-2 mb-1 px-3 py-1.5 rounded-lg"
-              style={{ background:'rgba(240,79,90,0.08)', border:'1px solid rgba(240,79,90,0.2)' }}>
+              style={{ background:'rgba(240,79,90,0.06)', border:'1px solid rgba(240,79,90,0.15)' }}>
               <span className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ background:'var(--red)', animation:'lbBlink 1.5s infinite' }} />
-              <span className="lb-fade mono font-bold text-[9px]" style={{ color:'var(--red)' }}>AUTO-TRADE ON</span>
+                style={{ background:'var(--red)', animation:'lbBlink2 1.5s infinite' }} />
+              <span className="lb-fade" style={{ fontSize:9, color:'var(--red)', fontFamily:'var(--font-mono)', fontWeight:500 }}>AUTO-TRADE ON</span>
             </div>
           )}
-          <div className="flex items-center gap-3 px-[14px] py-2">
-            <span className="w-2 h-2 rounded-full shrink-0"
-              style={{ background: isConnected?'var(--green)':'var(--text3)', animation: isConnected?'lbBlink 2s infinite':'none' }} />
-            <span className="lb-fade mono text-[10px]" style={{ color:'var(--text3)' }}>
+          <div className="flex items-center gap-3 px-[13px] py-2">
+            <span className="w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ background: isConnected?'var(--green)':'var(--text3)', animation: isConnected?'lbBlink2 2s infinite':'none' }} />
+            <span className="lb-fade" style={{ fontSize:10, color:'var(--text3)', fontFamily:'var(--font-mono)' }}>
               {isConnected ? 'LBank connected' : 'No API key'}
             </span>
           </div>
-          <button onClick={() => setActiveTab('settings')}
-            className={`lb-item ${activeTab === 'settings' ? 'active' : ''}`}>
-            <span className="lb-icon text-center shrink-0" style={{ fontSize:15, width:24 }}>⚙</span>
-            <span className="lb-label">Settings</span>
-          </button>
         </div>
       </aside>
     </>
