@@ -7,21 +7,21 @@ import type { ActiveTab } from '@/lib/store'
 import LiveTickerStrip from '@/components/charts/LiveTickerStrip'
 
 const NAV_COLS = [
-  [{ id:'chat',      icon:'⬡', label:'AI Assistant', desc:'Ask anything'  },
-   { id:'markets',   icon:'╱╲',label:'Markets',       desc:'Live prices'   }],
-  [{ id:'portfolio', icon:'◍', label:'Portfolio',     desc:'Holdings'      },
-   { id:'trading',   icon:'⇅', label:'Trade',         desc:'Buy & sell'    }],
-  [{ id:'alerts',    icon:'⊙', label:'Alerts',        desc:'Notify me'     },
-   { id:'agent',     icon:'⟳', label:'Agent',         desc:'Auto rules'    }],
-  [{ id:'learn',     icon:'⊕', label:'Learn',         desc:'Education'     },
-   { id:'messaging', icon:'⌘', label:'Messaging',     desc:'Telegram'      }],
-  [{ id:'settings',  icon:'⊘', label:'Settings',      desc:'Configure'     },
-   { id:'home',      icon:'▦', label:'Dashboard',     desc:'Home'          }],
+  [{ id:'chat',      icon:'🤖', label:'AI Assistant', desc:'Ask anything'  },
+   { id:'markets',   icon:'📈', label:'Markets',       desc:'Live prices'   }],
+  [{ id:'portfolio', icon:'💼', label:'Portfolio',     desc:'Holdings'      },
+   { id:'trading',   icon:'⚡', label:'Trade',         desc:'Buy & sell'    }],
+  [{ id:'alerts',    icon:'🔔', label:'Alerts',        desc:'Notify me'     },
+   { id:'agent',     icon:'🎯', label:'Agent',         desc:'Auto rules'    }],
+  [{ id:'learn',     icon:'📚', label:'Learn',         desc:'Education'     },
+   { id:'messaging', icon:'💬', label:'Messaging',     desc:'Telegram'      }],
+  [{ id:'settings',  icon:'⚙️', label:'Settings',      desc:'Configure'     },
+   { id:'home',      icon:'🏠', label:'Dashboard',     desc:'Home'          }],
 ]
 
 const pBase: React.CSSProperties = {
   padding:'8px 8px 6px',
-  background:'rgba(0,0,0,0.25)',
+  background:'rgba(0,0,0,0.2)',
   borderBottom:'1px solid var(--border)',
   minHeight:68,
 }
@@ -30,9 +30,9 @@ function PreviewChat() {
   return (
     <div style={pBase}>
       <div style={{ display:'flex', flexDirection:'column', gap:3 }}>
-        <div style={{ fontSize:7, padding:'3px 6px', borderRadius:4, background:'var(--bg3)', color:'var(--text3)', alignSelf:'flex-end', fontFamily:'var(--font-sans)' }}>BTC price?</div>
-        <div style={{ fontSize:7, padding:'3px 6px', borderRadius:4, background:'rgba(26,111,255,0.08)', color:'var(--blue)', border:'1px solid rgba(26,111,255,0.12)', fontFamily:'var(--font-sans)' }}>BTC is $103,420 ↑2.4%</div>
-        <div style={{ fontSize:7, padding:'3px 6px', borderRadius:4, background:'var(--bg3)', color:'var(--text3)', alignSelf:'flex-end', fontFamily:'var(--font-sans)' }}>Top movers?</div>
+        <div style={{ fontSize:7, padding:'3px 6px', borderRadius:4, background:'var(--bg3)', color:'var(--text3)', alignSelf:'flex-end' }}>BTC price?</div>
+        <div style={{ fontSize:7, padding:'3px 6px', borderRadius:4, background:'rgba(26,111,255,0.08)', color:'var(--blue)', border:'1px solid rgba(26,111,255,0.12)' }}>BTC is $103,420 ↑2.4%</div>
+        <div style={{ fontSize:7, padding:'3px 6px', borderRadius:4, background:'var(--bg3)', color:'var(--text3)', alignSelf:'flex-end' }}>Top movers?</div>
       </div>
     </div>
   )
@@ -43,9 +43,9 @@ function PreviewMarkets() {
     <div style={pBase}>
       {[['BTC','$103,420','+2.4%',true],['ETH','$3,821','+1.8%',true],['LTC','$89.42','+1.8%',true],['XRP','$0.62','-0.9%',false]].map(([s,v,c,up]) => (
         <div key={s as string} style={{ display:'flex', justifyContent:'space-between', padding:'2px 0', borderBottom:'1px solid rgba(255,255,255,0.03)' }}>
-          <span style={{ fontSize:8, color:'var(--text3)', fontFamily:'var(--font-sans)' }}>{s}</span>
+          <span style={{ fontSize:8, color:'var(--text3)' }}>{s}</span>
           <span style={{ fontSize:8, color:'var(--text2)', fontFamily:'var(--font-mono)' }}>{v}</span>
-          <span style={{ fontSize:7, color: up?'var(--green)':'var(--red)', fontFamily:'var(--font-mono)' }}>{c}</span>
+          <span style={{ fontSize:7, color:up?'var(--green)':'var(--red)', fontFamily:'var(--font-mono)' }}>{c}</span>
         </div>
       ))}
     </div>
@@ -60,7 +60,7 @@ function PreviewPortfolio() {
           <div style={{ display:'flex', justifyContent:'space-between' }}>
             <div style={{ display:'flex', alignItems:'center', gap:3 }}>
               <div style={{ width:4, height:4, borderRadius:'50%', background:col as string }} />
-              <span style={{ fontSize:7, color:'var(--text3)', fontFamily:'var(--font-sans)' }}>{s}</span>
+              <span style={{ fontSize:7, color:'var(--text3)' }}>{s}</span>
             </div>
             <span style={{ fontSize:7, color:'var(--text2)', fontFamily:'var(--font-mono)' }}>{v}</span>
           </div>
@@ -78,8 +78,8 @@ function PreviewAlerts() {
     <div style={pBase}>
       {[['BTC','above $105k','var(--blue)',true],['ETH','below $3.5k','var(--red)',true],['LTC','above $100','var(--blue)',false]].map(([s,c,col,on]) => (
         <div key={s as string} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(255,255,255,0.02)', borderRadius:4, padding:'3px 5px', marginBottom:3 }}>
-          <span style={{ fontSize:7, color:'var(--text3)', fontFamily:'var(--font-sans)' }}>{s}</span>
-          <span style={{ fontSize:7, color:col as string, fontFamily:'var(--font-sans)' }}>{c}</span>
+          <span style={{ fontSize:7, color:'var(--text3)' }}>{s}</span>
+          <span style={{ fontSize:7, color:col as string }}>{c}</span>
           <span style={{ fontSize:6, padding:'1px 4px', borderRadius:3, background:on?'rgba(26,111,255,0.1)':'rgba(240,79,90,0.1)', color:on?'var(--blue)':'var(--red)', fontFamily:'var(--font-mono)' }}>{on?'ON':'OFF'}</span>
         </div>
       ))}
@@ -108,8 +108,8 @@ function PreviewAgent() {
     <div style={pBase}>
       {[['IF BTC > $105k','BUY','var(--green)'],['IF RSI > 80','ALERT','var(--blue)'],['DAILY 9AM','REPORT','#8b5cf6']].map(([cond,act,col]) => (
         <div key={cond as string} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', background:'rgba(255,255,255,0.02)', borderRadius:4, padding:'3px 5px', marginBottom:3 }}>
-          <span style={{ fontSize:7, color:'var(--text3)', fontFamily:'var(--font-sans)' }}>{cond}</span>
-          <span style={{ fontSize:6, padding:'1px 5px', borderRadius:3, background:`rgba(0,0,0,0.3)`, color:col as string, border:`1px solid ${col}22`, fontFamily:'var(--font-mono)' }}>{act}</span>
+          <span style={{ fontSize:7, color:'var(--text3)' }}>{cond}</span>
+          <span style={{ fontSize:6, padding:'1px 5px', borderRadius:3, background:'rgba(0,0,0,0.3)', color:col as string, border:`1px solid ${col}33`, fontFamily:'var(--font-mono)' }}>{act}</span>
         </div>
       ))}
     </div>
@@ -117,12 +117,12 @@ function PreviewAgent() {
 }
 
 const FEAT_COLS = [
-  [{ id:'chat',      icon:'⬡', name:'AI Chat',    sub:'Live LBank answers',       Preview:PreviewChat      },
-   { id:'markets',   icon:'╱╲',name:'Markets',     sub:'Real-time prices',         Preview:PreviewMarkets   }],
-  [{ id:'portfolio', icon:'◍', name:'Portfolio',   sub:'Holdings & PnL',           Preview:PreviewPortfolio },
-   { id:'trading',   icon:'⇅', name:'Trade',       sub:'Buy & sell on LBank',      Preview:PreviewTrade     }],
-  [{ id:'alerts',    icon:'⊙', name:'Alerts',      sub:'Price notifications',      Preview:PreviewAlerts    },
-   { id:'agent',     icon:'⟳', name:'Auto Agent',  sub:'Rules that trade for you', Preview:PreviewAgent     }],
+  [{ id:'chat',      icon:'🤖', name:'AI Chat',    sub:'Live LBank answers',       Preview:PreviewChat      },
+   { id:'markets',   icon:'📈', name:'Markets',     sub:'Real-time prices',         Preview:PreviewMarkets   }],
+  [{ id:'portfolio', icon:'💼', name:'Portfolio',   sub:'Holdings & PnL',           Preview:PreviewPortfolio },
+   { id:'trading',   icon:'⚡', name:'Trade',       sub:'Buy & sell on LBank',      Preview:PreviewTrade     }],
+  [{ id:'alerts',    icon:'🔔', name:'Alerts',      sub:'Price notifications',      Preview:PreviewAlerts    },
+   { id:'agent',     icon:'🎯', name:'Auto Agent',  sub:'Rules that trade for you', Preview:PreviewAgent     }],
 ]
 
 function useScroll(ref: React.RefObject<HTMLDivElement>, colW: number) {
@@ -148,15 +148,16 @@ function useScroll(ref: React.RefObject<HTMLDivElement>, colW: number) {
     const stop = () => { paused = true }
     const go   = () => { paused = false }
     const down = (e: MouseEvent) => { dragging = true; paused = true; startX = e.clientX; startOff = offset; e.preventDefault() }
-    const move = (e: MouseEvent) => { if (!dragging) return; offset = startOff+(startX-e.clientX); if (offset>total*2) offset-=total; if (offset<0) offset+=total; track.style.transform=`translateX(${-offset}px)` }
+    const move = (e: MouseEvent) => { if (!dragging) return; offset = startOff+(startX-e.clientX); if(offset>total*2)offset-=total; if(offset<0)offset+=total; track.style.transform=`translateX(${-offset}px)` }
     const up   = () => { if (dragging) { dragging = false; paused = false } }
     const ts   = (e: TouchEvent) => { dragging = true; paused = true; startX = e.touches[0].clientX; startOff = offset }
-    const tm   = (e: TouchEvent) => { if (!dragging) return; offset = startOff+(startX-e.touches[0].clientX); if (offset>total*2) offset-=total; if (offset<0) offset+=total; track.style.transform=`translateX(${-offset}px)` }
+    const tm   = (e: TouchEvent) => { if (!dragging) return; offset = startOff+(startX-e.touches[0].clientX); if(offset>total*2)offset-=total; if(offset<0)offset+=total; track.style.transform=`translateX(${-offset}px)` }
     const te   = () => { dragging = false; paused = false }
 
     wrap.addEventListener('mouseenter',stop); wrap.addEventListener('mouseleave',go)
     wrap.addEventListener('mousedown',down); window.addEventListener('mousemove',move); window.addEventListener('mouseup',up)
     wrap.addEventListener('touchstart',ts,{passive:true}); wrap.addEventListener('touchmove',tm,{passive:true}); wrap.addEventListener('touchend',te)
+
     return () => {
       cancelAnimationFrame(raf)
       wrap.removeEventListener('mouseenter',stop); wrap.removeEventListener('mouseleave',go)
@@ -179,10 +180,10 @@ export default function DashboardTab() {
   useScroll(navRef,  116)
   useScroll(featRef, 116)
 
-  const wrap:     React.CSSProperties = { overflow:'hidden', cursor:'grab', userSelect:'none' }
-  const track:    React.CSSProperties = { display:'flex', gap:8, width:'max-content' }
-  const col:      React.CSSProperties = { display:'flex', flexDirection:'column', gap:8 }
-  const navCard:  React.CSSProperties = { width:108, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4, padding:'12px 8px', borderRadius:10, background:'var(--bg2)', border:'1px solid var(--border)', cursor:'pointer', textAlign:'center' }
+  const wrap: React.CSSProperties     = { overflow:'hidden', cursor:'grab', userSelect:'none' }
+  const track: React.CSSProperties    = { display:'flex', gap:8, width:'max-content' }
+  const col: React.CSSProperties      = { display:'flex', flexDirection:'column', gap:8 }
+  const navCard: React.CSSProperties  = { width:108, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4, padding:'12px 8px', borderRadius:10, background:'var(--bg2)', border:'1px solid var(--border)', cursor:'pointer', textAlign:'center' }
   const featCard: React.CSSProperties = { width:108, borderRadius:10, background:'var(--bg2)', border:'1px solid var(--border)', cursor:'pointer', overflow:'hidden', textAlign:'left', padding:0 }
 
   const Divider = ({ label }: { label: string }) => (
@@ -201,7 +202,7 @@ export default function DashboardTab() {
 
         {/* Header */}
         <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
-          <div style={{ width:32, height:32, borderRadius:8, background:'var(--blue)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, fontSize:11, color:'#fff', flexShrink:0, fontFamily:'var(--font-sans)' }}>LB</div>
+          <div style={{ width:32, height:32, borderRadius:8, background:'var(--blue)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:600, fontSize:11, color:'#fff', flexShrink:0 }}>LB</div>
           <div style={{ flex:1 }}>
             <div style={{ fontSize:10, letterSpacing:'0.12em', textTransform:'uppercase', color:'var(--text3)', fontFamily:'var(--font-mono)' }}>LBrain</div>
             <div style={{ fontSize:12, color:'var(--text2)', marginTop:1, fontWeight:400 }}>{greet}, {name}</div>
@@ -221,7 +222,7 @@ export default function DashboardTab() {
         </div>
 
         {/* Navigate */}
-        <div style={{ maxWidth:800, margin:'0 auto' }}>
+        <div style={{ maxWidth:360, margin:'0 auto' }}>
           <Divider label="Navigate" />
           <div style={wrap}>
             <div ref={navRef} style={track}>
@@ -231,7 +232,7 @@ export default function DashboardTab() {
                     <button key={item.id} onClick={() => setActiveTab(item.id as ActiveTab)} style={navCard}
                       onMouseEnter={e => { const el=e.currentTarget as HTMLElement; el.style.borderColor='var(--blue)'; el.style.background='var(--bg3)' }}
                       onMouseLeave={e => { const el=e.currentTarget as HTMLElement; el.style.borderColor='var(--border)'; el.style.background='var(--bg2)' }}>
-                      <span style={{ fontSize:15, opacity:0.6, fontFamily:'var(--font-mono)', color:'var(--text)' }}>{item.icon}</span>
+                      <span style={{ fontSize:18, lineHeight:1 }}>{item.icon}</span>
                       <div style={{ fontSize:10, fontWeight:500, color:'var(--text2)' }}>{item.label}</div>
                       <div style={{ fontSize:8, color:'var(--text3)', fontWeight:400 }}>{item.desc}</div>
                     </button>
@@ -243,7 +244,7 @@ export default function DashboardTab() {
         </div>
 
         {/* Features */}
-        <div style={{ maxWidth:800, margin:'0 auto' }}>
+        <div style={{ maxWidth:360, margin:'0 auto' }}>
           <Divider label="Features" />
           <div style={wrap}>
             <div ref={featRef} style={track}>
