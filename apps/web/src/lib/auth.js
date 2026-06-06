@@ -1,0 +1,70 @@
+import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
+export const authOptions = {
+    providers: [
+        ...(process.env.GOOGLE_CLIENT_ID ? [
+            GoogleProvider({
+                clientId: process.env.GOOGLE_CLIENT_ID,
+                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            })
+        ] : []),
+        CredentialsProvider({
+            name: 'LBrain',
+            credentials: {
+                email: { label: 'Email', type: 'email' },
+                password: { label: 'Password', type: 'password' },
+                anonymous: { label: 'Anonymous', type: 'text' },
+            },
+            async authorize(credentials) {
+                if (credentials?.anonymous === 'true') {
+                    const guestId = `guest_${Math.random().toString(36).slice(2, 10)}`;
+                    return { id: guestId, email: `${guestId}@guest.lbrain.ai`, name: 'Guest' };
+                }
+                if (!credentials?.email || !credentials?.password)
+                    return null;
+                if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+                    try {
+                        const { signIn } = await import('./supabase');
+                        const { user, error } = await signIn(credentials.email, credentials.password);
+                        if (!error && user)
+                            return {
+                                id: user.id,
+                                email: user.email ?? '',
+                                name: user.user_metadata?.display_name ?? user.email?.split('@')[0] ?? 'User',
+                            };
+                    }
+                    catch { }
+                }
+                // Demo accounts
+                const DEMO = [
+                    { id: '1', email: 'demo@lbrain.ai', password: 'demo1234', name: 'Demo User' },
+                    { id: '2', email: 'admin@lbrain.ai', password: 'admin1234', name: 'Admin User' },
+                ];
+                return DEMO.find(u => u.email === credentials.email && u.password === credentials.password) ?? null;
+            },
+        }),
+    ],
+    session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
+    pages: { signIn: '/login', signOut: '/login', error: '/login' },
+    callbacks: {
+        async jwt({ token, user, account }) {
+            if (user) {
+                token.id = user.id;
+                token.isGuest = String(user.id).startsWith('guest_');
+            }
+            if (account)
+                token.provider = account.provider;
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.id = token.id;
+                session.user.isGuest = token.isGuest;
+                session.user.provider = token.provider;
+            }
+            return session;
+        },
+    },
+    secret: process.env.NEXTAUTH_SECRET,
+};
+//# sourceMappingURL=auth.js.map
