@@ -13,8 +13,8 @@
   --font-mono:  'DM Mono', 'Space Mono', monospace;
 
   /* LBank blue brand palette */
-  --blue:        #1a6fff;
-  --blue-dim:    #1458cc;
+  --blue:        #fffb1a;
+  --blue-dim:    #ccb014;
   --blue-glow:   rgba(26, 111, 255, 0.12);
   --blue-subtle: rgba(26, 111, 255, 0.06);
 
