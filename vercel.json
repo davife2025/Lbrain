@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "buildCommand": "cd apps/web && npm run build",
-  "outputDirectory": "apps/web/.next",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
   "installCommand": "npm install --ignore-scripts",
   "framework": "nextjs",
   "regions": ["iad1"],
- "headers": [
+  "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
