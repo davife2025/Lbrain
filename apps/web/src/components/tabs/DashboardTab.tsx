@@ -222,7 +222,7 @@ export default function DashboardTab() {
         </div>
 
         {/* Navigate */}
-        <div style={{ maxWidth:360, margin:'0 auto' }}>
+        <div style={{ maxWidth:840, margin:'0 auto' }}>
           <Divider label="Navigate" />
           <div style={wrap}>
             <div ref={navRef} style={track}>
@@ -244,7 +244,7 @@ export default function DashboardTab() {
         </div>
 
         {/* Features */}
-        <div style={{ maxWidth:360, margin:'0 auto' }}>
+        <div style={{ maxWidth:840, margin:'0 auto' }}>
           <Divider label="Features" />
           <div style={wrap}>
             <div ref={featRef} style={track}>
