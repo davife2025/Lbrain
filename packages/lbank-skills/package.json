@@ -1,8 +1,8 @@
 {
   "name": "@lbrain/lbank-skills",
   "version": "1.0.0",
-  "main": "./src/index.js",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
