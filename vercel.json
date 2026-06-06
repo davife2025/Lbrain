@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd ../.. && npm run build --workspace=packages/lbank-skills && cd apps/web && npm run build",
+  "buildCommand": "cd ../.. && npm install && npm run build --workspace=packages/lbank-skills && npm run build --workspace=packages/ai && cd apps/web && npm run build",
   "outputDirectory": ".next",
   "installCommand": "cd ../.. && npm install --ignore-scripts",
   "framework": "nextjs",
