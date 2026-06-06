@@ -2,11 +2,11 @@
   "name": "@lbrain/lbank-skills",
   "version": "1.0.0",
   "main": "./dist/index.js",
-  "types": "./dist/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "lint": "eslint dist/"
+    "lint": "eslint src/"
   },
   "dependencies": {
     "axios": "^1.7.0",
